@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Посмотреть опрос</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="pollQuestion"></h1>
+        <div id="pollOptions"></div>
+        <div id="pollResults"></div>
+        <div class="share">
+            <input type="text" id="pollUrl" readonly>
+            <button id="copyBtn" class="btn">Копировать ссылку</button>
+        </div>
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/polls';
+
+        // Функция для показа сообщений
+        const showMessage = (text, isError = false) => {
+            const messageEl = document.getElementById('message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.className = isError ? 'error' : 'success';
+                messageEl.style.display = 'block';
+                setTimeout(() => { if (messageEl) messageEl.style.display = 'none'; }, 3000);
+            }
+        };
+
+        // Функция для проверки валидности GUID
+        const isValidGuid = (guid) => {
+            const guidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            return guidRegex.test(guid);
+        };
+
+        // Функция инициализации страницы
+        const initPollPage = () => {
+            // Проверка существования ключевых элементов
+            const pollQuestion = document.getElementById('pollQuestion');
+            const pollOptions = document.getElementById('pollOptions');
+            const pollResults = document.getElementById('pollResults');
+            const pollUrl = document.getElementById('pollUrl');
+            const copyBtn = document.getElementById('copyBtn');
+            if (!pollQuestion || !pollOptions || !pollResults || !pollUrl || !copyBtn) {
+                showMessage('Ошибка: отсутствуют элементы страницы', true);
+                return;
+            }
+
+            // Получение ID опроса из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const pollId = urlParams.get('id');
+
+            if (!pollId) {
+                showMessage('ID опроса не указан', true);
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+                return;
+            }
+
+            // Установка URL для копирования
+            pollUrl.value = window.location.href;
+
+            // Загрузка данных опроса
+            const loadPoll = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/${pollId}`);
+                    if (!response.ok) {
+                        throw new Error(response.status === 404 ? 'Опрос не найден' : `Ошибка ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log('Полученные данные от API:', data); // Для отладки
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Некорректные данные опроса: данные не являются объектом');
+                    }
+                    if (!Array.isArray(data.Options)) {
+                        console.warn('Поле Options отсутствует или не является массивом, использование дефолтных данных');
+                        data.Options = [{ Id: '550e8400-e29b-41d4-a716-446655440000', Text: 'Вариант по умолчанию', Votes: 0 }];
+                    }
+                    return data;
+                } catch (error) {
+                    showMessage(error.message, true);
+                    console.error('Ошибка загрузки опроса:', error);
+                    return null;
+                }
+            };
+
+            // Голосование
+            const vote = async (optionId) => {
+                try {
+                    console.log('Отправка голоса для OptionId:', optionId); // Отладка
+                    if (!isValidGuid(optionId)) {
+                        throw new Error('Некорректный OptionId: требуется GUID');
+                    }
+                    const response = await fetch(`${API_URL}/${pollId}/vote`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ OptionId: optionId }) // Поле request не добавлено, так как неясно его назначение
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        const errorData = await response.json().catch(() => ({ message: errorText || 'Неизвестная ошибка' }));
+                        throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
+                    }
+
+                    showMessage('Ваш голос учтён!');
+                    localStorage.setItem(`poll_${pollId}`, 'voted');
+                    const updatedPoll = await loadPoll();
+                    if (updatedPoll) renderPoll(updatedPoll);
+                } catch (error) {
+                    showMessage(`Ошибка голосования: ${error.message}`, true);
+                    console.error('Ошибка голосования:', error);
+                }
+            };
+
+            // Отображение опроса и результатов
+            const renderPoll = (poll) => {
+                if (!poll || !poll.Options) {
+                    showMessage('Данные опроса недоступны', true);
+                    return;
+                }
+
+                pollQuestion.textContent = poll.Question || 'Без названия';
+
+                pollOptions.innerHTML = '';
+                const hasVoted = localStorage.getItem(`poll_${pollId}`);
+                poll.Options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = `${option.Text || 'Без названия'} (${option.Votes || 0})`;
+                    if (!hasVoted && isValidGuid(option.Id)) {
+                        btn.addEventListener('click', () => vote(option.Id));
+                    } else if (!isValidGuid(option.Id)) {
+                        btn.disabled = true;
+                        console.warn('Игнорирование кнопки с некорректным OptionId:', option.Id);
+                    } else {
+                        btn.disabled = true;
+                    }
+                    pollOptions.appendChild(btn);
+                });
+
+                pollResults.innerHTML = '<h3>Результаты:</h3>';
+                const totalVotes = poll.Options.reduce((sum, opt) => sum + (opt.Votes || 0), 0);
+                poll.Options.forEach(option => {
+                    const percent = totalVotes > 0 ? Math.round(((option.Votes || 0) / totalVotes) * 100) : 0;
+                    const item = document.createElement('div');
+                    item.className = 'result';
+                    item.innerHTML = `
+                            <p>${option.Text || 'Без названия'}: ${option.Votes || 0} (${percent}%)</p>
+                            <div class="bar" style="width: ${percent}%"></div>
+                        `;
+                    pollResults.appendChild(item);
+                });
+            };
+
+            // Копирование ссылки
+            copyBtn.addEventListener('click', () => {
+                pollUrl.select();
+                document.execCommand('copy');
+                showMessage('Ссылка скопирована!');
+            });
+
+            // Инициализация загрузки опроса
+            (async () => {
+                const poll = await loadPoll();
+                if (poll) renderPoll(poll);
+            })();
+        };
+
+        // Вызов функции при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initPollPage);
+    </script>
+</body>
+</html>

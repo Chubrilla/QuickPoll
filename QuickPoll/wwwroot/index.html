@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickPoll</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>QuickPoll</h1>
+        <a href="create.html" class="btn primary">Создать опрос</a>
+        <form id="find">
+            <input type="text" id="pollId" placeholder="Введите ID опроса">
+            <button type="submit" class="btn">Найти</button>
+        </form>
+        <div id="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/polls';
+
+        // Функция для показа сообщений
+        const showMessage = (text, isError = false) => {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = isError ? 'error' : 'success';
+            messageEl.style.display = 'block';
+            setTimeout(() => messageEl.style.display = 'none', 3000);
+        };
+
+        // Обработчик формы поиска
+        document.getElementById('find').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pollId = document.getElementById('pollId').value.trim();
+            if (!pollId) {
+                showMessage('Введите ID опроса', true);
+                return;
+            }
+            window.location.href = `poll.html?id=${pollId}`;
+        });
+    </script>
+</body>
+</html>

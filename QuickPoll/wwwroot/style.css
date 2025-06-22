@@ -1,0 +1,119 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #4a6fa5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+    .btn.primary {
+        background: #2ecc71;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#options .option {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+    #options .option input {
+        flex-grow: 1;
+        margin-right: 5px;
+    }
+
+#options .remove {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#pollOptions button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+}
+
+    #pollOptions button:hover {
+        background: #f0f0f0;
+    }
+
+.result {
+    margin: 10px 0;
+}
+
+.bar {
+    height: 20px;
+    background: #4a6fa5;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+#message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.error {
+    background: #ffebee;
+    border-left: 4px solid #e74c3c;
+}
+
+.success {
+    background: #e8f5e9;
+    border-left: 4px solid #2ecc71;
+}
+
+.share {
+    margin-top: 20px;
+}
+
+#pollUrl {
+    margin-bottom: 10px;
+}
