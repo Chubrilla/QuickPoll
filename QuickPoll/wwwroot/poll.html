@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a href="index.html" class="btn back">Назад</a>
     <div class="container">
         <h1 id="pollQuestion"></h1>
         <div id="pollOptions"></div>
@@ -15,9 +16,12 @@
             <input type="text" id="pollUrl" readonly>
             <button id="copyBtn" class="btn">Копировать ID</button>
         </div>
+        <div id="qrCode" style="margin: 20px 0; text-align: center;"></div>
         <div id="message" style="display: none;"></div>
     </div>
 
+    <!-- QRious библиотека для генерации QR-кода -->
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
     <script>
         const API_URL = 'http://localhost:5000/api/polls';
 
@@ -46,7 +50,8 @@
             const pollResults = document.getElementById('pollResults');
             const pollUrl = document.getElementById('pollUrl');
             const copyBtn = document.getElementById('copyBtn');
-            if (!pollQuestion || !pollOptions || !pollResults || !pollUrl || !copyBtn) {
+            const qrCodeContainer = document.getElementById('qrCode');
+            if (!pollQuestion || !pollOptions || !pollResults || !pollUrl || !copyBtn || !qrCodeContainer) {
                 showMessage('Ошибка: отсутствуют элементы страницы', true);
                 return;
             }
@@ -61,8 +66,18 @@
                 return;
             }
 
-            // Установка URL для копирования
+            // Установка только id для копирования
             pollUrl.value = pollId;
+
+            // Генерация QR-кода для ссылки на этот опрос
+            qrCodeContainer.innerHTML = '';
+            const pollLink = window.location.origin + '/poll.html?id=' + pollId;
+            const qr = new QRious({
+                value: pollLink,
+                size: 180
+            });
+            qr.image.classList.add('qrCode');
+            qrCodeContainer.appendChild(qr.image);
 
             // Загрузка данных опроса
             const loadPoll = async () => {
@@ -157,18 +172,18 @@
                     const item = document.createElement('div');
                     item.className = 'result';
                     item.innerHTML = `
-                                <p>${option.Text || 'Без названия'}: ${option.Votes || 0} (${percent}%)</p>
-                                <div class="bar" style="width: ${percent}%"></div>
-                            `;
+                                    <p>${option.Text || 'Без названия'}: ${option.Votes || 0} (${percent}%)</p>
+                                    <div class="bar" style="width: ${percent}%"></div>
+                                `;
                     pollResults.appendChild(item);
                 });
             };
 
-            // Копирование ссылки
+            // Копирование ID
             copyBtn.addEventListener('click', () => {
                 pollUrl.select();
                 document.execCommand('copy');
-                showMessage('Ссылка скопирована!');
+                showMessage('ID скопирован!');
             });
 
             // --- REAL-TIME через polling ---

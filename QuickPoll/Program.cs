@@ -20,8 +20,8 @@ builder.Services.AddCors(options =>
 });
 var app = builder.Build();
 
-app.UseDefaultFiles(); // Автоматически ищет index.html
-app.UseStaticFiles();  // Разрешает доступ к wwwroot
+app.UseDefaultFiles(); 
+app.UseStaticFiles();  
 
 app.UseRouting();
 app.UseCors("AllowAll");
