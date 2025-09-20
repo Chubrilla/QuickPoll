@@ -14,7 +14,7 @@ namespace QuickPoll.Controllers
         private readonly AppDbContext _db;
         public PollsController(AppDbContext db) => _db = db;
 
-        //Создание опроса
+        
         [HttpPost]
         public async Task<IActionResult> CreatePoll([FromBody] CreatePollRequest request)
         {
@@ -28,7 +28,7 @@ namespace QuickPoll.Controllers
             poll.Options = request.Options.Select(o => new Option
             {
                 Text = o,
-                PollId = poll.Id  // Устанавливаем связь
+                PollId = poll.Id 
             }).ToList();
 
             await _db.Polls.AddAsync(poll);
@@ -36,7 +36,7 @@ namespace QuickPoll.Controllers
 
             return Ok(new { poll.Id });
         }
-        //Получение статистики
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPoll(Guid id)
         {
@@ -62,19 +62,19 @@ namespace QuickPoll.Controllers
             return Ok(pollDTO);
         }
 
-        //Голосование 
+        
         [HttpPost("{pollId}/vote")]
         public async Task<IActionResult> Vote(Guid pollId, [FromBody] VoteRequest request)
         {
-            // Валидация
+            
             if (pollId == Guid.Empty || request?.OptionId == Guid.Empty)
             {
                 return BadRequest("Некорректные идентификаторы опроса или варианта.");
             }
 
-            // Поиск опроса и варианта
+           
             var option = await _db.Options
-                .Include(o => o.Poll) // Подгружаем опрос для информации в ответе
+                .Include(o => o.Poll) 
                 .FirstOrDefaultAsync(o => o.Id == request.OptionId && o.PollId == pollId);
 
             if (option == null)
@@ -82,11 +82,11 @@ namespace QuickPoll.Controllers
                 return NotFound("Вариант не найден или не относится к этому опросу.");
             }
 
-            // Голосование
+           
             option.Votes++;
             await _db.SaveChangesAsync();
 
-            // Возвращаем актуальные данные для обновления UI
+            
             return Ok(new VoteResponse
             {
                 OptionId = option.Id,
@@ -94,7 +94,7 @@ namespace QuickPoll.Controllers
                 CurrentVotes = option.Votes,
                 TotalVotesInPoll = await _db.Options
                     .Where(o => o.PollId == pollId)
-                    .SumAsync(o => o.Votes) // Общее число голосов в опросе
+                    .SumAsync(o => o.Votes) 
             });
         }
 

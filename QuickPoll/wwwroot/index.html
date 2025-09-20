@@ -20,7 +20,7 @@
     <script>
         const API_URL = 'http://localhost:5000/api/polls';
 
-        // Функция для показа сообщений
+        
         const showMessage = (text, isError = false) => {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -29,7 +29,7 @@
             setTimeout(() => messageEl.style.display = 'none', 3000);
         };
 
-        // Обработчик формы поиска
+        
         document.getElementById('find').addEventListener('submit', (e) => {
             e.preventDefault();
             const pollId = document.getElementById('pollId').value.trim();

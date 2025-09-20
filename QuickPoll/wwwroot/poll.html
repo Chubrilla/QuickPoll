@@ -20,12 +20,12 @@
         <div id="message" style="display: none;"></div>
     </div>
 
-    <!-- QRious библиотека для генерации QR-кода -->
+    
     <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
     <script>
         const API_URL = 'http://localhost:5000/api/polls';
 
-        // Функция для показа сообщений
+      
         const showMessage = (text, isError = false) => {
             const messageEl = document.getElementById('message');
             if (messageEl) {
@@ -36,15 +36,15 @@
             }
         };
 
-        // Функция для проверки валидности GUID
+        
         const isValidGuid = (guid) => {
             const guidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
             return guidRegex.test(guid);
         };
 
-        // Функция инициализации страницы
+        
         const initPollPage = () => {
-            // Проверка существования ключевых элементов
+            
             const pollQuestion = document.getElementById('pollQuestion');
             const pollOptions = document.getElementById('pollOptions');
             const pollResults = document.getElementById('pollResults');
@@ -56,7 +56,7 @@
                 return;
             }
 
-            // Получение ID опроса из URL
+            
             const urlParams = new URLSearchParams(window.location.search);
             const pollId = urlParams.get('id');
 
@@ -66,10 +66,10 @@
                 return;
             }
 
-            // Установка только id для копирования
+            
             pollUrl.value = pollId;
 
-            // Генерация QR-кода для ссылки на этот опрос
+            
             qrCodeContainer.innerHTML = '';
             const pollLink = window.location.origin + '/poll.html?id=' + pollId;
             const qr = new QRious({
@@ -79,7 +79,7 @@
             qr.image.classList.add('qrCode');
             qrCodeContainer.appendChild(qr.image);
 
-            // Загрузка данных опроса
+            
             const loadPoll = async () => {
                 try {
                     const response = await fetch(`${API_URL}/${pollId}`);
@@ -87,7 +87,7 @@
                         throw new Error(response.status === 404 ? 'Опрос не найден' : `Ошибка ${response.status}`);
                     }
                     const data = await response.json();
-                    // Универсальная поддержка camelCase и PascalCase + маппинг опций
+                    
                     if (Array.isArray(data.options)) {
                         data.Options = data.options.map(opt => ({
                             Id: opt.id || opt.Id,
@@ -110,7 +110,7 @@
                 }
             };
 
-            // Голосование
+            
             const vote = async (optionId) => {
                 try {
                     if (!isValidGuid(optionId)) {
@@ -130,7 +130,7 @@
 
                     showMessage('Ваш голос учтён!');
                     localStorage.setItem(`poll_${pollId}`, 'voted');
-                    // После голосования сразу обновляем результаты
+                    
                     const updatedPoll = await loadPoll();
                     if (updatedPoll) renderPoll(updatedPoll);
                 } catch (error) {
@@ -139,7 +139,7 @@
                 }
             };
 
-            // Отображение опроса и результатов
+            
             const renderPoll = (poll) => {
                 if (!poll || !poll.Options) {
                     showMessage('Данные опроса недоступны', true);
@@ -179,35 +179,35 @@
                 });
             };
 
-            // Копирование ID
+            
             copyBtn.addEventListener('click', () => {
                 pollUrl.select();
                 document.execCommand('copy');
                 showMessage('ID скопирован!');
             });
 
-            // --- REAL-TIME через polling ---
+            
             let pollInterval = null;
 
             (async () => {
                 const poll = await loadPoll();
                 if (poll) renderPoll(poll);
 
-                // Запускаем polling только если опрос успешно загружен
+                
                 pollInterval = setInterval(async () => {
                     const updatedPoll = await loadPoll();
                     if (updatedPoll) renderPoll(updatedPoll);
-                }, 3000); // 3 секунды
+                }, 3000); 
             })();
 
-            // Очищаем polling при уходе со страницы
+            
             window.addEventListener('beforeunload', () => {
                 if (pollInterval) clearInterval(pollInterval);
             });
-            // --- конец блока polling ---
+            
         };
 
-        // Вызов функции при загрузке страницы
+        
         document.addEventListener('DOMContentLoaded', initPollPage);
     </script>
 </body>

@@ -17,7 +17,7 @@ namespace QuickPoll.Data
             modelBuilder.Entity<Option>()
                 .HasOne(o => o.Poll)
                 .WithMany(p => p.Options)
-                .HasForeignKey(o => o.PollId);  // Явно указываем внешний ключ
+                .HasForeignKey(o => o.PollId); 
         }
     }
 }

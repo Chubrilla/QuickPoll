@@ -30,7 +30,7 @@
     <script>
         const API_URL = 'http://localhost:5000/api/polls';
 
-        // Функция для показа сообщений
+        
         const showMessage = (text, isError = false) => {
             const messageEl = document.getElementById('message');
             messageEl.textContent = text;
@@ -39,7 +39,7 @@
             setTimeout(() => messageEl.style.display = 'none', 3000);
         };
 
-        // Добавление нового варианта ответа
+        
         document.getElementById('addOption').addEventListener('click', () => {
             const optionsContainer = document.getElementById('optionsContainer');
             const count = optionsContainer.children.length + 1;
@@ -59,7 +59,7 @@
             });
         });
 
-        // Удаление варианта ответа
+        
         document.querySelectorAll('#optionsContainer .remove').forEach(button => {
             button.addEventListener('click', () => {
                 const optionsContainer = document.getElementById('optionsContainer');
@@ -71,7 +71,7 @@
             });
         });
 
-        // Отправка формы создания опроса
+        
         document.getElementById('createForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const question = document.getElementById('question').value.trim();
