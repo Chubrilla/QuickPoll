@@ -9,7 +9,7 @@ namespace QuickPoll.Controllers
 {
     [ApiController]
     [Route("api/polls")]
-    public class PollsController : ControllerBase
+    public partial class PollsController : ControllerBase
     {
         private readonly AppDbContext _db;
         public PollsController(AppDbContext db) => _db = db;
@@ -19,10 +19,10 @@ namespace QuickPoll.Controllers
         public async Task<IActionResult> CreatePoll([FromBody] CreatePollRequest request)
         {
             if (string.IsNullOrEmpty(request.Question))
-                return BadRequest("Question is required");
+                return BadRequest("Название опроса отсутствует");
 
             if (request.Options == null || !request.Options.Any())
-                return BadRequest("At least one option is required");
+                return BadRequest("нужно название варианта");
 
             var poll = new Poll { Question = request.Question };
             poll.Options = request.Options.Select(o => new Option
@@ -96,26 +96,6 @@ namespace QuickPoll.Controllers
                     .Where(o => o.PollId == pollId)
                     .SumAsync(o => o.Votes) 
             });
-        }
-
-
-        public class CreatePollRequest
-        {
-            public string Question { get; set; }
-            public List<string> Options { get; set; }
-        }
-
-        public class VoteRequest
-        {
-            public Guid OptionId { get; set; }
-        }
-
-        public class VoteResponse
-        {
-            public Guid OptionId { get; set; }
-            public Guid PollId { get; set; }
-            public int CurrentVotes { get; set; }
-            public int TotalVotesInPoll { get; set; }
         }
     }
 }
